@@ -1,0 +1,44 @@
+name: Deploy Static HTML to GitHub Pages
+
+on:
+  # 'main' ব্র্যাঞ্চে কোড push করলে অটোমেটিক বিল্ড ও ডিপ্লয় হবে
+  push:
+    branches: ["main"]
+
+  # প্রয়োজন হলে GitHub ওয়েবসাইট থেকে ম্যানুয়ালি রান করার অপশন
+  workflow_dispatch:
+
+# GitHub Pages ডিপ্লয়মেন্টের জন্য প্রয়োজনীয় পারমিশন
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# এক সাথে একাধিক ডিপ্লয়মেন্ট হলে আগেরটা ক্যানসেল করে নতুনটা রান করবে
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload Artifacts (Root Directory)
+        uses: actions/upload-pages-artifact@v3
+        with:
+          # আপনার index.html মূল ফোল্ডারেই আছে, তাই পথ '.' দেওয়া হয়েছে
+          path: '.'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+        
